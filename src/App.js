@@ -422,6 +422,7 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
+          <Btn onClick={() => setTab("inventario")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
           <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>📊 Dashboard</div>
           <div style={{ fontSize: 11, color: "#475569", marginTop: 2, textTransform: "capitalize" }}>{mesActual}</div>
         </div>
@@ -470,6 +471,7 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
+          <Btn onClick={() => setTab("inventario")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
           <div style={{ fontSize: 20, fontWeight: 800, color: "#4ade80" }}>💰 Ventas</div>
           <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{ventas.length} ventas registradas</div>
         </div>
