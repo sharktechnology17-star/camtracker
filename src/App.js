@@ -462,7 +462,7 @@ export default function App() {
 
               <div style={CARD}>
                 <div style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", marginBottom: 10 }}>Inventario actual</div>
-                {[["Productos en stock", products.length, "#f1f5f9"], ["Capital invertido", fmt(totalInvested), "#94a3b8"], ["Ganancia potencial", fmt(totalProfit), "#4ade80"]].map(([l, v, c]) => (
+                {[["Unidades en stock", products.reduce((s, p) => s + (p.stock || 0), 0), "#f1f5f9"], ["Capital invertido", fmt(totalInvested), "#94a3b8"], ["Ganancia potencial", fmt(totalProfit), "#4ade80"]].map(([l, v, c]) => (
                   <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #1e293b" }}>
                     <span style={{ fontSize: 12, color: "#94a3b8" }}>{l}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: c }}>{v}</span>
