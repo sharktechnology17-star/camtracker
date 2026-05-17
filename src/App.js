@@ -462,7 +462,7 @@ export default function App() {
 
               <div style={CARD}>
                 <div style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", marginBottom: 10 }}>Inventario actual</div>
-                {[["Unidades en stock", products.reduce((s, p) => s + (p.stock || 0), 0), "#f1f5f9"], ["Capital invertido", fmt(totalInvested), "#94a3b8"], ["Ganancia potencial", fmt(totalProfit), "#4ade80"]].map(([l, v, c]) => (
+                {[["Unidades en stock", products.reduce((s, p) => s + (p.stock || 0), 0), "#f1f5f9"], ["Capital invertido", fmt(totalInvested + ventas.reduce((s, v) => s + (v.costo_unitario || 0) * (v.cantidad || 0), 0)), "#94a3b8"], ["Ganancia real", fmt(ventas.reduce((s, v) => s + (v.ganancia_total || 0), 0)), "#4ade80"]].map(([l, v, c]) => (
                   <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #1e293b" }}>
                     <span style={{ fontSize: 12, color: "#94a3b8" }}>{l}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: c }}>{v}</span>
@@ -562,12 +562,18 @@ export default function App() {
             <div style={{ ...CARD, background: "linear-gradient(135deg,#0c1f3a,#0f172a)", borderColor: "#1e3a5f" }}>
               <div style={{ fontSize: 10, color: "#475569", marginBottom: 10, textTransform: "uppercase" }}>Resumen · {products.length} productos</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
-                {[["Invertido", fmt(totalInvested), "#94a3b8"], ["Potencial", fmt(totalInvested + totalProfit), "#38bdf8"], ["Ganancia", fmt(totalProfit), "#4ade80"]].map(([l, v, c]) => (
+                {[
+                  ["Invertido total", fmt(totalInvested + ventas.reduce((s, v) => s + (v.costo_unitario || 0) * (v.cantidad || 0), 0)), "#94a3b8"],
+                  ["Recuperado", fmt(ventas.reduce((s, v) => s + (v.precio_venta || 0) * (v.cantidad || 0), 0)), "#38bdf8"],
+                  ["Ganancia real", fmt(ventas.reduce((s, v) => s + (v.ganancia_total || 0), 0)), "#4ade80"],
+                ].map(([l, v, c]) => (
                   <div key={l} style={{ textAlign: "center" }}>
                     <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
                     <div style={{ fontSize: 12, fontWeight: 800, color: c, marginTop: 2 }}>{v}</div>
                   </div>
                 ))}
+              </div>
+            </div>
               </div>
             </div>
 
