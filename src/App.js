@@ -54,8 +54,10 @@ const Btn = ({ children, onClick, bg = "#1e293b", color = "#f1f5f9", style = {} 
   <button onClick={onClick} style={{ background: bg, color, border: "none", borderRadius: 8, padding: "11px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", ...style }}>{children}</button>
 );
 
-const ROOT = { minHeight: "100vh", background: "#070d1a", color: "#f1f5f9", fontFamily: "'DM Mono','Courier New',monospace", maxWidth: 480, margin: "0 auto", paddingBottom: 80 };
-const HDR = { padding: "18px 16px 12px", borderBottom: "1px solid #1e293b", background: "#070d1a", position: "sticky", top: 0, zIndex: 10 };
+const ROOT = { minHeight: "100vh", background: "#070d1a", color: "#f1f5f9", fontFamily: "'DM Mono','Courier New',monospace", paddingBottom: 80 };
+const INNER = { maxWidth: 1100, margin: "0 auto", padding: "0 16px" };
+const HDR = { padding: "18px 0 12px", borderBottom: "1px solid #1e293b", background: "#070d1a", position: "sticky", top: 0, zIndex: 10 };
+const HDR_INNER = { maxWidth: 1100, margin: "0 auto", padding: "0 16px" };
 const CARD = { background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, padding: 14, marginBottom: 10 };
 
 // ─── Gráfica historial costos ─────────────────────────────────────────────────
@@ -231,11 +233,13 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
-          <Btn onClick={() => { resetFormV(); setView("detail"); }} style={{ marginBottom: 8, padding: "7px 14px" }}>← Cancelar</Btn>
-          <div style={{ fontSize: 17, fontWeight: 800, color: "#4ade80" }}>💰 Registrar venta</div>
-          <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>{p.nombre}</div>
+          <div style={HDR_INNER}>
+            <Btn onClick={() => { resetFormV(); setView("detail"); }} style={{ marginBottom: 8, padding: "7px 14px" }}>← Cancelar</Btn>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#4ade80" }}>💰 Registrar venta</div>
+            <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>{p.nombre}</div>
+          </div>
         </div>
-        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ ...INNER, maxWidth: 640, display: "flex", flexDirection: "column", gap: 14, paddingTop: 16 }}>
 
           {/* Info precio mínimo */}
           <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: 12 }}>
@@ -296,11 +300,13 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
-          <Btn onClick={() => setView("list")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
-          <div style={{ fontSize: 17, fontWeight: 800, color: "#38bdf8" }}>{p.nombre}</div>
-          <div style={{ marginTop: 5 }}><Tag label={p.categoria} color="#38bdf8" /></div>
+          <div style={HDR_INNER}>
+            <Btn onClick={() => setView("list")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#38bdf8" }}>{p.nombre}</div>
+            <div style={{ marginTop: 5 }}><Tag label={p.categoria} color="#38bdf8" /></div>
+          </div>
         </div>
-        <div style={{ padding: 16 }}>
+        <div style={{ ...INNER, maxWidth: 740, paddingTop: 16 }}>
 
           <div style={{ ...CARD, borderColor: color + "66" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
@@ -378,10 +384,12 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
-          <Btn onClick={() => setView("list")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Cancelar</Btn>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>{view === "add" ? "Nuevo producto" : "Editar producto"}</div>
+          <div style={HDR_INNER}>
+            <Btn onClick={() => setView("list")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Cancelar</Btn>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>{view === "add" ? "Nuevo producto" : "Editar producto"}</div>
+          </div>
         </div>
-        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ ...INNER, maxWidth: 640, display: "flex", flexDirection: "column", gap: 14, paddingTop: 16 }}>
           <Inp label="Nombre" value={formP.nombre} onChange={(e) => setFormP({ ...formP, nombre: e.target.value })} placeholder="Ej: Insta360 X4" />
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <label style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8 }}>Categoría</label>
@@ -422,14 +430,16 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
-          <Btn onClick={() => setTab("inventario")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>📊 Dashboard</div>
-          <div style={{ fontSize: 11, color: "#475569", marginTop: 2, textTransform: "capitalize" }}>{mesActual}</div>
+          <div style={HDR_INNER}>
+            <Btn onClick={() => setTab("inventario")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>📊 Dashboard</div>
+            <div style={{ fontSize: 11, color: "#475569", marginTop: 2, textTransform: "capitalize" }}>{mesActual}</div>
+          </div>
         </div>
-        <div style={{ padding: 16 }}>
+        <div style={{ ...INNER, paddingTop: 16 }}>
           {loading ? <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>⏳ Cargando...</div> : (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 10 }}>
                 {[["Total vendido", fmt(totalVendidoMes), "#38bdf8"], ["Ganancia real", fmt(gananciaRealMes), "#4ade80"], ["Ventas realizadas", `${ventasDelMes.length}`, "#f1f5f9"], ["Descuentos dados", fmt(descuentosMes), "#f87171"]].map(([l, v, c]) => (
                   <div key={l} style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, padding: 14 }}>
                     <div style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", marginBottom: 6 }}>{l}</div>
@@ -471,17 +481,21 @@ export default function App() {
     return (
       <div style={ROOT}>
         <div style={HDR}>
-          <Btn onClick={() => setTab("inventario")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#4ade80" }}>💰 Ventas</div>
-          <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{ventas.length} ventas registradas</div>
+          <div style={HDR_INNER}>
+            <Btn onClick={() => setTab("inventario")} style={{ marginBottom: 8, padding: "7px 14px" }}>← Volver</Btn>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#4ade80" }}>💰 Ventas</div>
+            <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{ventas.length} ventas registradas</div>
+          </div>
         </div>
-        <div style={{ padding: 16 }}>
+        <div style={{ ...INNER, paddingTop: 16 }}>
           {loading ? <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>⏳ Cargando...</div> : ventas.length === 0 ? (
             <div style={{ textAlign: "center", color: "#475569", padding: 40 }}>
               <div style={{ fontSize: 32 }}>💸</div>
               <div style={{ marginTop: 8 }}>Sin ventas aún. Registra desde cada producto.</div>
             </div>
-          ) : ventas.map((v, i) => {
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 10 }}>
+            {ventas.map((v, i) => {
             const margenV = pct(v.costo_unitario, v.precio_venta);
             const colorV = mc(margenV);
             return (
@@ -505,6 +519,8 @@ export default function App() {
               </div>
             );
           })}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -517,6 +533,7 @@ export default function App() {
         <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: toast.type === "err" ? "#7f1d1d" : "#064e3b", color: toast.type === "err" ? "#f87171" : "#4ade80", padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 700, zIndex: 100, whiteSpace: "nowrap" }}>{toast.msg}</div>
       )}
       <div style={HDR}>
+        <div style={HDR_INNER}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>📷 CamTracker</div>
@@ -531,9 +548,10 @@ export default function App() {
               style={{ background: tab === t ? "#0ea5e9" : "#1e293b", color: tab === t ? "#fff" : "#94a3b8", border: "none", borderRadius: 8, padding: "7px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
           ))}
         </div>
+        </div>
       </div>
 
-      <div style={{ padding: "14px 16px 0" }}>
+      <div style={{ ...INNER, paddingTop: 14 }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>
             <div style={{ fontSize: 28, marginBottom: 10 }}>⏳</div>
@@ -543,7 +561,7 @@ export default function App() {
           <>
             <div style={{ ...CARD, background: "linear-gradient(135deg,#0c1f3a,#0f172a)", borderColor: "#1e3a5f" }}>
               <div style={{ fontSize: 10, color: "#475569", marginBottom: 10, textTransform: "uppercase" }}>Resumen · {products.length} productos</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
                 {[["Invertido", fmt(totalInvested), "#94a3b8"], ["Potencial", fmt(totalInvested + totalProfit), "#38bdf8"], ["Ganancia", fmt(totalProfit), "#4ade80"]].map(([l, v, c]) => (
                   <div key={l} style={{ textAlign: "center" }}>
                     <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
@@ -576,7 +594,9 @@ export default function App() {
                 <div style={{ fontSize: 32 }}>📦</div>
                 <div style={{ marginTop: 8 }}>Sin productos. ¡Agrega el primero!</div>
               </div>
-            ) : filtered.map((p) => {
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+              {filtered.map((p) => {
               const margin = pct(p.costo, p.precio_venta);
               const color = mc(margin);
               const ganancia = (p.precio_venta || 0) - (p.costo || 0);
@@ -586,7 +606,7 @@ export default function App() {
               const ventasP = ventas.filter((v) => v.producto_id === p.id).length;
               return (
                 <div key={p.id} onClick={() => { setSelected(p); setView("detail"); }}
-                  style={{ ...CARD, cursor: "pointer", borderLeft: `3px solid ${color}` }}>
+                  style={{ ...CARD, cursor: "pointer", borderLeft: `3px solid ${color}`, marginBottom: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 14, color: "#f1f5f9", marginBottom: 3 }}>{p.nombre}</div>
@@ -609,6 +629,8 @@ export default function App() {
                 </div>
               );
             })}
+              </div>
+            )}
           </>
         )}
       </div>
