@@ -265,7 +265,6 @@ function ViewDetalle({ prod, ventas, onVolver, onVenta, onEditar, onEliminar }) 
         </div>
       </div>
     </div>
-    </div>
   );
 }
 
