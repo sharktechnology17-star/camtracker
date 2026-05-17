@@ -38,6 +38,116 @@ const pct = (cost, price) => price > 0 ? (((price - cost) / price) * 100).toFixe
 const mc = (m) => { const v = parseFloat(m); return v >= 35 ? "#4ade80" : v >= 20 ? "#fbbf24" : "#f87171"; };
 const ml = (m) => { const v = parseFloat(m); return v >= 35 ? "Excelente" : v >= 20 ? "Aceptable" : "Bajo"; };
 
+// ─── Gráfica de historial de precios ─────────────────────────────────────────
+const PriceChart = ({ historial }) => {
+  if (!historial || historial.length < 2) return null;
+
+  const costos = historial.map((h) => h.costo);
+  const minVal = Math.min(...costos);
+  const maxVal = Math.max(...costos);
+  const promedio = Math.round(costos.reduce((a, b) => a + b, 0) / costos.length);
+  const actual = costos[costos.length - 1];
+  const diferencia = actual - minVal;
+  const pctDif = minVal > 0 ? ((diferencia / minVal) * 100).toFixed(1) : 0;
+
+  const W = 320, H = 120, PAD = 12;
+  const range = maxVal - minVal || 1;
+
+  const points = historial.map((h, i) => {
+    const x = PAD + (i / (historial.length - 1)) * (W - PAD * 2);
+    const y = PAD + ((maxVal - h.costo) / range) * (H - PAD * 2);
+    return { x, y, ...h };
+  });
+
+  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${H} L ${points[0].x} ${H} Z`;
+
+  const minIdx = costos.indexOf(minVal);
+  const maxIdx = costos.indexOf(maxVal);
+
+  return (
+    <div style={{ background: "#0a1628", border: "1px solid #1e293b", borderRadius: 12, padding: 14, marginBottom: 10 }}>
+      <div style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", marginBottom: 12 }}>Historial de precios de costo</div>
+
+      {/* Indicadores */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+        {[
+          ["Mínimo", fmt(minVal), historial[minIdx]?.fecha, "#4ade80"],
+          ["Promedio", fmt(promedio), "", "#fbbf24"],
+          ["Máximo", fmt(maxVal), historial[maxIdx]?.fecha, "#f87171"],
+        ].map(([l, v, f, c]) => (
+          <div key={l} style={{ background: "#0f172a", borderRadius: 8, padding: "8px 10px", borderTop: `2px solid ${c}` }}>
+            <div style={{ fontSize: 9, color: "#475569", textTransform: "uppercase", marginBottom: 3 }}>{l}</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: c }}>{v}</div>
+            {f && <div style={{ fontSize: 9, color: "#475569", marginTop: 2 }}>{f}</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Alerta si precio actual no es el mínimo */}
+      {diferencia > 0 && (
+        <div style={{ background: "#3f2a0a", border: "1px solid #fbbf2444", borderRadius: 8, padding: "8px 10px", marginBottom: 12, fontSize: 11, color: "#fbbf24" }}>
+          ⚠️ Estás comprando {fmt(diferencia)} ({pctDif}%) más caro que tu mínimo histórico
+        </div>
+      )}
+      {diferencia === 0 && historial.length > 1 && (
+        <div style={{ background: "#0a2a1a", border: "1px solid #4ade8044", borderRadius: 8, padding: "8px 10px", marginBottom: 12, fontSize: 11, color: "#4ade80" }}>
+          ✓ Estás comprando al precio más bajo de tu historial
+        </div>
+      )}
+
+      {/* Gráfica SVG */}
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>
+        {/* Área bajo la curva */}
+        <defs>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill="url(#areaGrad)" />
+
+        {/* Línea de promedio */}
+        {range > 0 && (
+          <line
+            x1={PAD} x2={W - PAD}
+            y1={PAD + ((maxVal - promedio) / range) * (H - PAD * 2)}
+            y2={PAD + ((maxVal - promedio) / range) * (H - PAD * 2)}
+            stroke="#fbbf24" strokeWidth="0.5" strokeDasharray="4 3" opacity="0.5"
+          />
+        )}
+
+        {/* Línea principal */}
+        <path d={pathD} fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Puntos */}
+        {points.map((p, i) => {
+          const isMin = p.costo === minVal;
+          const isMax = p.costo === maxVal;
+          const isLast = i === points.length - 1;
+          const color = isMin ? "#4ade80" : isMax ? "#f87171" : isLast ? "#38bdf8" : "#64748b";
+          return (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r={isMin || isMax || isLast ? 5 : 3} fill={color} stroke="#070d1a" strokeWidth="1.5" />
+              {(isMin || isMax || isLast) && (
+                <text x={p.x} y={p.y - 9} textAnchor="middle" fontSize="8" fill={color} fontFamily="monospace">
+                  {fmt(p.costo).replace("$", "").replace(".000", "k")}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Fechas eje X */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+        <span style={{ fontSize: 9, color: "#475569" }}>{historial[0]?.fecha}</span>
+        <span style={{ fontSize: 9, color: "#475569" }}>{historial[historial.length - 1]?.fecha}</span>
+      </div>
+    </div>
+  );
+};
+
 const Tag = ({ label, color }) => (
   <span style={{ background: color + "22", color, border: `1px solid ${color}44`, borderRadius: 4, fontSize: 11, padding: "2px 7px", fontWeight: 700 }}>{label}</span>
 );
@@ -140,7 +250,7 @@ export default function App() {
         <div style={{ padding: 16 }}>
           <div style={{ ...CARD, borderColor: color + "66" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-              {[["Costo", fmt(p.costo), "#94a3b8"], ["Precio venta", fmt(p.precio_venta), "#f1f5f9"], ["Ganancia unit.", fmt(ganancia), "#4ade80"], ["Stock", `${p.stock} uds`, "#38bdf8"]].map(([l, v, c]) => (
+              {[["Costo actual", fmt(p.costo), "#94a3b8"], ["Precio venta", fmt(p.precio_venta), "#f1f5f9"], ["Ganancia unit.", fmt(ganancia), "#4ade80"], ["Stock", `${p.stock} uds`, "#38bdf8"]].map(([l, v, c]) => (
                 <div key={l}><div style={{ fontSize: 10, color: "#475569", marginBottom: 3, textTransform: "uppercase" }}>{l}</div><div style={{ fontSize: 17, fontWeight: 800, color: c }}>{v}</div></div>
               ))}
             </div>
@@ -162,23 +272,14 @@ export default function App() {
             <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>si vendes las {p.stock} unidades</div>
           </div>
 
-          {(p.historial_costos?.length || 0) > 1 && (
-            <div style={CARD}>
-              <div style={{ fontSize: 10, color: "#475569", marginBottom: 10, textTransform: "uppercase" }}>Historial de costos</div>
-              {[...p.historial_costos].reverse().map((h, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: i < p.historial_costos.length - 1 ? "1px solid #1e293b" : "none" }}>
-                  <span style={{ fontSize: 12, color: "#94a3b8" }}>{h.fecha}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: i === 0 ? "#38bdf8" : "#475569" }}>{fmt(h.costo)}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Gráfica de historial */}
+          <PriceChart historial={p.historial_costos} />
 
           {p.nota && <div style={{ ...CARD, borderColor: "#fbbf2444" }}><div style={{ fontSize: 10, color: "#fbbf24", marginBottom: 4 }}>NOTA</div><div style={{ fontSize: 13, color: "#cbd5e1" }}>{p.nota}</div></div>}
 
           <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
             <Btn bg="#1e3a5f" color="#38bdf8" onClick={() => { setForm({ nombre: p.nombre, categoria: p.categoria, costo: p.costo, precio_venta: p.precio_venta, stock: p.stock, nota: p.nota || "" }); setSelected(p); setView("edit"); }} style={{ flex: 1 }}>✏️ Editar</Btn>
-            <Btn bg="#3f0f0f" color="#f87171" onClick={() => { if (confirm("¿Eliminar este producto?")) deleteProduct(p.id); }} style={{ flex: 1 }}>🗑 Eliminar</Btn>
+            <Btn bg="#3f0f0f" color="#f87171" onClick={() => { if (window.confirm("¿Eliminar este producto?")) deleteProduct(p.id); }} style={{ flex: 1 }}>🗑 Eliminar</Btn>
           </div>
         </div>
       </div>
@@ -252,7 +353,7 @@ export default function App() {
         ) : (
           <>
             <div style={{ ...CARD, background: "linear-gradient(135deg,#0c1f3a,#0f172a)", borderColor: "#1e3a5f" }}>
-              <div style={{ fontSize: 10, color: "#475569", marginBottom: 10, textTransform: "uppercase" }}>Resumen del inventario · {products.length} productos</div>
+              <div style={{ fontSize: 10, color: "#475569", marginBottom: 10, textTransform: "uppercase" }}>Resumen · {products.length} productos</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                 {[["Invertido", fmt(totalInvested), "#94a3b8"], ["Potencial", fmt(totalRevenue), "#38bdf8"], ["Ganancia", fmt(totalProfit), "#4ade80"]].map(([l, v, c]) => (
                   <div key={l} style={{ textAlign: "center" }}>
@@ -297,13 +398,19 @@ export default function App() {
               const margin = pct(p.costo, p.precio_venta);
               const color = mc(margin);
               const ganancia = (p.precio_venta || 0) - (p.costo || 0);
+              const costos = p.historial_costos?.map((h) => h.costo) || [];
+              const minCosto = costos.length > 1 ? Math.min(...costos) : null;
+              const esMasCaro = minCosto && p.costo > minCosto;
               return (
                 <div key={p.id} onClick={() => { setSelected(p); setView("detail"); }}
                   style={{ ...CARD, cursor: "pointer", borderLeft: `3px solid ${color}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 14, color: "#f1f5f9", marginBottom: 3 }}>{p.nombre}</div>
-                      <Tag label={p.categoria} color="#38bdf8" />
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <Tag label={p.categoria} color="#38bdf8" />
+                        {esMasCaro && <Tag label={`+${(((p.costo - minCosto) / minCosto) * 100).toFixed(0)}% vs mín`} color="#f87171" />}
+                      </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontSize: 18, fontWeight: 900, color }}>{margin}%</div>
