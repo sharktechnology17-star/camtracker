@@ -424,6 +424,132 @@ function ViewVentas({ ventas, loading, onVolver }) {
   );
 }
 
+function ViewProductosHistorial({ products, loading, search, setSearch, filterCat, setFilterCat, tab, setTab, onAdd, onSelect }) {
+  const cats = ["Todos", ...Array.from(new Set(products.map((p) => p.categoria)))];
+  const filtered = products
+    .filter((p) => filterCat === "Todos" || p.categoria === filterCat)
+    .filter((p) => p.nombre?.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div style={css.page}>
+      <div style={css.hdr}>
+        <div style={css.wrap}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8" }}>📷 CamTracker</div>
+              <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>Inventario · Ventas · Dashboard</div>
+            </div>
+            <Btn onClick={onAdd} bg="#0ea5e9" style={{ fontSize: 20, padding: "8px 14px" }}>+</Btn>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[["inventario", "📦 Inventario"], ["productos", "📊 Productos"], ["ventas", "💰 Ventas"], ["dashboard", "📉 Dashboard"]].map(([t, l]) => (
+              <Btn key={t} onClick={() => setTab(t)} bg={tab === t ? "#0ea5e9" : "#1e293b"} fg={tab === t ? "#fff" : "#94a3b8"}>{l}</Btn>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={{ ...css.wrap, paddingTop: 14 }}>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>⏳</div>
+            <div>Cargando desde Supabase...</div>
+          </div>
+        ) : (
+          <div>
+            <input type="search" placeholder="🔍 Buscar producto..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ ...css.inp, marginBottom: 10 }} />
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 10 }}>
+              {cats.map((c) => (
+                <Btn key={c} onClick={() => setFilterCat(c)} bg={filterCat === c ? "#0ea5e9" : "#1e293b"} fg={filterCat === c ? "#fff" : "#94a3b8"} style={{ whiteSpace: "nowrap" }}>{c}</Btn>
+              ))}
+            </div>
+            {filtered.length === 0 ? (
+              <div style={{ textAlign: "center", color: "#475569", padding: 40 }}>
+                <div style={{ fontSize: 32 }}>📦</div>
+                <div style={{ marginTop: 8 }}>Sin productos. ¡Agrega el primero!</div>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 10 }}>
+                {filtered.map((p) => {
+                  const hist = p.historial_costos || [];
+                  const actual = p.costo;
+                  const minCosto = hist.length > 0 ? Math.min(...hist.map((h) => h.costo)) : actual;
+                  const maxCosto = hist.length > 0 ? Math.max(...hist.map((h) => h.costo)) : actual;
+                  const esMin = actual === minCosto;
+                  const esMax = actual === maxCosto;
+
+                  return (
+                    <div key={p.id} onClick={() => onSelect(p)} style={{ ...css.card, cursor: "pointer" }}>
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: "#f1f5f9", marginBottom: 3 }}>{p.nombre}</div>
+                        <Tag text={p.categoria} color="#38bdf8" />
+                      </div>
+
+                      <div style={{ background: "#0a1628", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
+                        <div style={{ fontSize: 9, color: "#475569", textTransform: "uppercase", marginBottom: 4 }}>Costo actual</div>
+                        <div style={{ fontSize: 18, fontWeight: 900, color: esMin ? "#4ade80" : esMax ? "#f87171" : "#f1f5f9" }}>
+                          {fmt(actual)}
+                          {esMin && " ✓ Mínimo"}
+                          {esMax && " ⚠️ Máximo"}
+                        </div>
+                      </div>
+
+                      {hist.length > 0 && (
+                        <div style={{ borderTop: "1px solid #1e293b", paddingTop: 10 }}>
+                          <div style={{ fontSize: 9, color: "#475569", textTransform: "uppercase", marginBottom: 8 }}>Historial de costos ({hist.length})</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {hist.slice().reverse().map((h, i) => {
+                              const esMenorQueActual = h.costo < actual;
+                              const esMayorQueActual = h.costo > actual;
+                              return (
+                                <div key={i} style={{ background: esMenorQueActual ? "#0a2a1a" : esMayorQueActual ? "#3f1a0a" : "#0f172a", border: `1px solid ${esMenorQueActual ? "#4ade8044" : esMayorQueActual ? "#f8717144" : "#1e293b"}`, borderRadius: 6, padding: "8px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: esMenorQueActual ? "#4ade80" : esMayorQueActual ? "#f87171" : "#f1f5f9" }}>
+                                      {fmt(h.costo)}
+                                    </div>
+                                    <div style={{ fontSize: 9, color: "#94a3b8" }}>{h.fecha}</div>
+                                  </div>
+                                  <div style={{ fontSize: 10, color: esMenorQueActual ? "#4ade80" : esMayorQueActual ? "#f87171" : "#94a3b8", fontWeight: 600 }}>
+                                    {esMenorQueActual && "✓ Más barato"}
+                                    {esMayorQueActual && "⚠️ Más caro"}
+                                    {!esMenorQueActual && !esMayorQueActual && "Actual"}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {hist.length > 1 && (
+                            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #1e293b", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                              <div>
+                                <div style={{ fontSize: 9, color: "#475569" }}>MÍNIMO HISTÓRICO</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: "#4ade80" }}>{fmt(minCosto)}</div>
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 9, color: "#475569" }}>MÁXIMO HISTÓRICO</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: "#f87171" }}>{fmt(maxCosto)}</div>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1" }}>
+                                <div style={{ fontSize: 9, color: "#475569" }}>DIFERENCIA</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: "#fbbf24" }}>
+                                  {fmt(maxCosto - minCosto)} ({(((maxCosto - minCosto) / minCosto) * 100).toFixed(1)}%)
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ViewInventario({ products, ventas, loading, search, setSearch, filterCat, setFilterCat, sortBy, setSortBy, tab, setTab, onAdd, onSelect }) {
   const totalInv = products.reduce((s, p) => s + (p.costo || 0) * (p.stock || 0), 0);
   const totalInvAll = totalInv + ventas.reduce((s, v) => s + (v.costo_unitario || 0) * (v.cantidad || 0), 0);
@@ -453,7 +579,7 @@ function ViewInventario({ products, ventas, loading, search, setSearch, filterCa
             <Btn onClick={onAdd} bg="#0ea5e9" style={{ fontSize: 20, padding: "8px 14px" }}>+</Btn>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
-            {[["inventario", "📦 Inventario"], ["ventas", "💰 Ventas"], ["dashboard", "📊 Dashboard"]].map(([t, l]) => (
+            {[["inventario", "📦 Inventario"], ["productos", "📊 Productos"], ["ventas", "💰 Ventas"], ["dashboard", "📉 Dashboard"]].map(([t, l]) => (
               <Btn key={t} onClick={() => setTab(t)} bg={tab === t ? "#0ea5e9" : "#1e293b"} fg={tab === t ? "#fff" : "#94a3b8"}>{l}</Btn>
             ))}
           </div>
@@ -639,11 +765,11 @@ export default function App() {
     );
   }
 
-  if (tab === "dashboard") {
+  if (tab === "productos") {
     return (
       <div>
         {toastEl}
-        <ViewDashboard products={products} ventas={ventas} loading={loading} onVolver={() => setTab("inventario")} />
+        <ViewProductosHistorial products={products} loading={loading} search={search} setSearch={setSearch} filterCat={filterCat} setFilterCat={setFilterCat} tab={tab} setTab={setTab} onAdd={() => { setFormP(EMPTY_P); setView("add"); }} onSelect={(p) => { setSelected(p); setView("detail"); }} />
       </div>
     );
   }
@@ -653,6 +779,15 @@ export default function App() {
       <div>
         {toastEl}
         <ViewVentas ventas={ventas} loading={loading} onVolver={() => setTab("inventario")} />
+      </div>
+    );
+  }
+
+  if (tab === "dashboard") {
+    return (
+      <div>
+        {toastEl}
+        <ViewDashboard products={products} ventas={ventas} loading={loading} onVolver={() => setTab("inventario")} />
       </div>
     );
   }
